@@ -1,0 +1,57 @@
+import numpy as np
+import pyvista as pv
+
+R = 5.0
+r = 0.75
+N = 15000
+
+t = np.random.uniform(0, 2 * np.pi, N)
+p = np.random.uniform(0, 2 * np.pi, N)
+
+x = (R + r * np.cos(t)) * np.cos(p)
+y = (R + r * np.cos(t)) * np.sin(p)
+z = r * np.sin(t)
+
+points = np.column_stack((x,y,z))
+cloud = pv.PolyData(points)
+cloud["scalars"] = np.arange(N)
+
+plotter = pv.Plotter()
+plotter.add_mesh(
+    cloud,
+    color="white",
+    cmap= "plasma",
+    point_size=5,
+    scalars="scalars",
+    render_points_as_spheres=True
+)
+
+plotter.show(interactive_update=True)
+
+dts = 0.2
+dps = 0.1
+
+dp = 0.01
+dt = 0.005
+
+steps = 1000
+for step in range(steps):
+
+    if plotter.render_window is None:
+        break
+
+    ot = np.random.normal(dt, dts, N)
+    op = np.random.normal(dp, dps, N)
+
+    p = (p + op) % (2 * np.pi)
+    t = (t + ot) % (2 * np.pi)
+
+    newx = (R + r*np.cos(t)) * np.cos(p)
+    newy = (R + r*np.cos(t)) * np.sin(p)
+    newz = r * np.sin(t)
+
+    cloud.points = np.column_stack((newx,newy,newz))
+
+    plotter.update()
+
+plotter.close()
